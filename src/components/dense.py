@@ -7,7 +7,7 @@ class Dense(Layer):
         self.cells = cells
         # We divide by input_len to reduce the variance of our initial values
         self.weights = np.random.randn(input_size, cells)/input_size
-        self.biases = np.zeros(cells)
+        self.biases = np.random.randn(cells)
         self.reset()
 
     def reset(self):
@@ -26,7 +26,7 @@ class Dense(Layer):
         self.last_totals = totals
         
         exp = np.exp(totals)
-        return(exp/np.sum(exp, axis=0)) 
+        return exp/np.sum(exp, axis=0)
     
     def backward(self, d_l_d_out):
         """  

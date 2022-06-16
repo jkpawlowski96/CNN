@@ -22,6 +22,9 @@ def get_mnist_data(valid_fraction=0.15, test=True, shuffle=True, skip=None, seed
     if test:
         x_test = mnist.test_images()
         y_test = mnist.test_labels()
+        if skip:
+            x_test = x_test[:skip]
+            y_test = y_test[:skip]
         res.append(x_test)
         res.append(y_test)
     return tuple(res)
