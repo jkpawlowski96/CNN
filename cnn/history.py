@@ -1,6 +1,5 @@
 from pathlib import Path
 import pickle
-from tkinter.messagebox import NO
 from data.utils import limit_float
 import pandas as pd
 
@@ -36,7 +35,7 @@ class History:
     def get_measure(self, key:str, epoch:int):
         if key not in self.res:
             return None
-        if epoch > len(self.res[key] - 1):
+        if epoch > len(self.res[key]) - 1:
             return None
         return self.res[key][epoch]
 

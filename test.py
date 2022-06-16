@@ -1,5 +1,5 @@
 import imp
-from src.components.measure import measure_acc, measure_f1, measure_precision, measure_recall
+from cnn.components.measure import measure_acc, measure_f1, measure_precision, measure_recall
 import numpy as np
 
 

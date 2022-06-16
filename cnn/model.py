@@ -1,3 +1,4 @@
+from pathlib import Path
 from termios import OFDEL
 from .components.layer import Layer
 from .components import Dense, Conv2D, MaxPool2D
@@ -15,12 +16,12 @@ class Model:
         self.loss = loss
         pass
 
-    def save(self, path):
-        pickle.dump(self, open(path, 'wb'))
+    def save(self, path:Path):
+        pickle.dump(self, open(str(path), 'wb'))
     
     @staticmethod
     def load(path):
-        model = pickle.load(open(path, 'rb'))
+        model = pickle.load(open(str(path), 'rb'))
         return  model
 
     def calculate_grad(self, pred, true_label):

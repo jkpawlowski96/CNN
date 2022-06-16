@@ -1,12 +1,14 @@
 from statistics import mode
 from sys import prefix
-from src.model import Model
+from cnn.model import Model
 from data.mnist import get_mnist_data
-from src.components.measure import measure_acc, measure_precision, measure_recall, measure_f1
+from cnn.components.measure import measure_acc, measure_precision, measure_recall, measure_f1
 from tqdm import tqdm
 from test import measure_model
-from utils import DEFAULT_TRAIN_SAVE_LOCATION, get_save_location
-from history import History
+from cnn.utils import DEFAULT_TRAIN_SAVE_LOCATION, get_save_location
+from cnn.history import History
+from cnn.early_stopping import EarlyStopping
+import pandas as pd
 
 
 def train(
@@ -18,8 +20,10 @@ def train(
     valid_fraction=0.15,
     valid=True,  
     test=True,
+    patience=None,
     save_model=True,
     save_history=True,
+    save_test=True,
     save_location=None,
     prefix=None):
 
@@ -34,6 +38,10 @@ def train(
 
     # init history
     history = History(prefix_list=prefix_list)
+
+    if patience:
+        # init early_stopping
+        early_stopping = EarlyStopping(history=history, patience=patience)
 
     # training process
     for epoch in range(epochs):
@@ -79,6 +87,10 @@ def train(
         if valid:
             print(history.get_logging_line(key_contain='val'))
 
+        if patience:
+            if not early_stopping.step():
+                print('--- early stopping: BREAK ---')
+
     # primary results
     results = [model, history]
 
@@ -86,7 +98,11 @@ def train(
     if test:
         test_scores = measure_model(model, x_test, y_test)
         results.append(test_scores)
-    
+        if save_test:
+            save_location =  get_save_location(DEFAULT_TRAIN_SAVE_LOCATION, prefix=prefix) if not save_location else save_location
+            test_scores_df = pd.DataFrame([test_scores])
+            test_scores_df.to_csv(save_location / 'test.csv')
+
     if save_model:
         save_location =  get_save_location(DEFAULT_TRAIN_SAVE_LOCATION, prefix=prefix) if not save_location else save_location
         model.save(save_location / 'model.pckl')
