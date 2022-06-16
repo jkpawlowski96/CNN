@@ -1,5 +1,7 @@
 from statistics import mode
 from sys import prefix
+
+from numpy import safe_eval
 from cnn.model import Model
 from data.mnist import get_mnist_data
 from cnn.components.measure import measure_acc, measure_precision, measure_recall, measure_f1
@@ -8,6 +10,7 @@ from test import measure_model
 from cnn.utils import DEFAULT_TRAIN_SAVE_LOCATION, get_save_location
 from cnn.history import History
 from cnn.early_stopping import EarlyStopping
+from cnn.checkpoint import Checkpoint
 import pandas as pd
 
 
@@ -17,10 +20,12 @@ def train(
     lr=0.001, 
     batch_size=4, 
     seed=39571592,
+    skip=None,
     valid_fraction=0.15,
     valid=True,  
     test=True,
     patience=None,
+    use_checkpoint=True,
     save_model=True,
     save_history=True,
     save_test=True,
@@ -29,19 +34,36 @@ def train(
 
     # get data
     x_train, y_train, x_valid, y_valid, x_test, y_test = get_mnist_data(
-        valid_fraction=valid_fraction, test=True, skip=200, seed=seed)
+        valid_fraction=valid_fraction, test=True, skip=skip, seed=seed)
 
     # measures prefix
     prefix_list = ['']
     if valid:
         prefix_list.append('val')
 
+    if not save_location and (
+        save_model or save_history or save_test or use_checkpoint
+    ):
+        save_location =  get_save_location(DEFAULT_TRAIN_SAVE_LOCATION, prefix=prefix) if not save_location else save_location
+
     # init history
     history = History(prefix_list=prefix_list)
 
     if patience:
         # init early_stopping
-        early_stopping = EarlyStopping(history=history, patience=patience)
+        early_stopping = EarlyStopping(
+            history=history, 
+            patience=patience, 
+            metric='val_f1' if valid else 'f1', 
+            inverse=False)
+
+    if use_checkpoint:
+        checkpoint = Checkpoint(
+            model=model, 
+            history=history, 
+            savedir=save_location, 
+            metric= 'val_f1' if valid else 'f1',
+            inverse=False)
 
     # training process
     for epoch in range(epochs):
@@ -87,9 +109,17 @@ def train(
         if valid:
             print(history.get_logging_line(key_contain='val'))
 
+        if use_checkpoint:
+            checkpoint.step()
+
         if patience:
             if not early_stopping.step():
                 print('--- early stopping: BREAK ---')
+                break
+
+    if use_checkpoint:
+        model = checkpoint.get_best_model()
+        print('Checkpoint: got best model')
 
     # primary results
     results = [model, history]
@@ -104,7 +134,7 @@ def train(
             test_scores_df.to_csv(save_location / 'test.csv')
 
     if save_model:
-        save_location =  get_save_location(DEFAULT_TRAIN_SAVE_LOCATION, prefix=prefix) if not save_location else save_location
+        
         model.save(save_location / 'model.pckl')
     
     if save_history:

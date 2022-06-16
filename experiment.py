@@ -58,4 +58,4 @@ def experiment(**kwargs):
 
 
 if __name__ == '__main__':
-    experiment(epochs=50, patience=5)
+    experiment(epochs=50, patience=5, skip=500)
