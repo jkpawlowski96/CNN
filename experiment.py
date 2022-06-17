@@ -1,4 +1,3 @@
-from sys import prefix
 from train import train
 from cnn.model import Model
 from cnn.components import FullyConnected, Conv2D, MaxPool2D

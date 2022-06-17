@@ -1,6 +1,3 @@
-from abc import abstractmethod
-
-
 class Layer:
     """
     Base class of layer component

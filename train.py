@@ -1,4 +1,3 @@
-from ast import parse
 from cnn.components.fully_connected import FullyConnected
 from cnn.components.pool import MaxPool2D
 from cnn.components.conv import Conv2D
@@ -157,13 +156,13 @@ def parse_args():
     )
     parser.add_argument("--filters", 
         required=False, 
-        type=int, 
         default=[8], 
-        action=lambda x: x.split(','),
-        help='  List of filters numbers\n\
-                Example:\n\
-                - 8 [conv_1 (8 filters)]\n\
-                - 4,8 [conv_1 (4 filters), conv_2 (8 filters)]')
+        type=lambda x: x.split(','),
+        help='List of filters numbers \n\
+            Examples: \n\
+            \'8\' [conv_1 (8 filters)] \n\
+            \'4,8\' [conv_1 (4 filters), conv_2 (8 filters)]'
+        )
     parser.add_argument('--lr', default=0.001)
     parser.add_argument('--epochs', default=50)
     parser.add_argument('--valid_fraction', default=0.15)
