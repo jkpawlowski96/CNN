@@ -14,6 +14,9 @@ def parse_args():
     return parser.parse_args()
 
 def predict(model_path:Path, source:Path, format:str):
+    """
+    Make prediction of CNN model for given files in [source]
+    """
     model = Model.load(str(model_path))
     print('model loaded')
     if source.is_dir():
