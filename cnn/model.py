@@ -1,5 +1,4 @@
 from pathlib import Path
-from termios import OFDEL
 from .components.layer import Layer
 from .components import Dense, Conv2D, MaxPool2D
 from typing import List, Tuple

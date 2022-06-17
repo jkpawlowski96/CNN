@@ -1,4 +1,3 @@
-from curses import beep
 from pathlib import Path
 from .history import History
 from .model import Model
