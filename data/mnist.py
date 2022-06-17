@@ -3,6 +3,9 @@ from .utils import shuffle as shuffle_arrays
  
 
 def get_mnist_data(valid_fraction=0.15, test=True, shuffle=True, skip=None, seed=None):
+    """
+    Get mnist dataset devided into subsets
+    """
     x_train = mnist.train_images()
     y_train = mnist.train_labels()
     if shuffle:

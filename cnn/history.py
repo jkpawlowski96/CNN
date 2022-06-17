@@ -5,6 +5,11 @@ import pandas as pd
 
 
 class History:
+    """
+    Object to track model training history. 
+    - it can keep metrics measures at each epoch
+    - able to dump and save into csv file
+    """
     def __init__(
             self, 
             prefix_list=['', 'val'],
@@ -20,6 +25,9 @@ class History:
         self.res = res
 
     def get_logging_line(self, key_contain=None, key_not_contain=None):
+        """
+        Get logging line status
+        """
         keys = list(self.res.keys())
         if key_contain:
             keys = [k for k in keys if key_contain in k]
@@ -30,9 +38,15 @@ class History:
         return line
 
     def add(self, key, value):
+        """
+        Add metric measure
+        """
         self.res[key].append(value)
 
     def get_measure(self, key:str, epoch:int):
+        """
+        Get metric measure [key] at specyfic [epoch]
+        """
         if key not in self.res:
             return None
         if epoch > len(self.res[key]) - 1:
@@ -40,6 +54,9 @@ class History:
         return self.res[key][epoch]
 
     def get_dataframe(self) -> pd.DataFrame:
+        """
+        Get DataFrame object from history
+        """
         measures = list(self.res.keys())
         columns = ['epoch'] + measures
         epochs = max([len(m) for m in self.res.values()])
@@ -56,7 +73,7 @@ class History:
 
     def save(self, filepath:Path, csv=True):
         """
-        Save history in file
+        Save history into file
         """
         pickle.dump(self.res, open(str(filepath), 'wb'))
         if csv:

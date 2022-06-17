@@ -4,7 +4,11 @@ from datetime import datetime
 LOC = Path(__file__).parent
 DEFAULT_TRAIN_SAVE_LOCATION = LOC.parent / 'TRAIN'
 
+
 def get_save_location(parent_dir:Path, prefix=None):
+    """
+    Create and get save location to keep results on drive
+    """
     # create parent dir
     if not parent_dir.exists():
         parent_dir.mkdir(parents=True)

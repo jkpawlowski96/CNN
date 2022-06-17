@@ -2,16 +2,25 @@ import numpy as np
 from .layer import Layer
 
 class Conv2D(Layer):
+    """
+    Convolution 2D model layer
+    """
     def __init__(self, channels, filters, kernel_size=3):
         self.channels = channels
         self.filters = filters
         self.kernel_size = kernel_size
+        # init weights and biases
         scale=0.5
         self.weights = np.random.uniform(-scale, scale, size=(self.kernel_size, self.kernel_size, channels, filters))
-        self.bias = np.random.uniform(-scale, scale, size=(1, 1, 1, filters))
+        self.biases = np.random.uniform(-scale, scale, size=(1, 1, 1, filters))
+        # init gradients
         self.reset()
     
     def iterate_regions(self, image):
+        """
+        Returns iterable object which contains image regions to perform layer operations
+        """
+        # image shape
         h,w = image.shape[:2]
         for i in range(h-2):
             for j in range(w-2):
@@ -19,41 +28,65 @@ class Conv2D(Layer):
                 yield im_region, i, j
                 
     def forward(self, input):
+        """
+        Forward conv2d output at gived [input]
+        """
+        # keep last input to grad backward calculation
         self.last_input = input
-        
+        # input shape
         h, w, c = input.shape
+        # init blank output 
         out = np.zeros((h-2, w-2, self.filters))
-        
+        # iterate over regions
         for region, i, j in self.iterate_regions(input):
+            # iterate over filters
             for f in range(self.filters):
-                out[i, j] += np.sum(np.multiply(region, self.weights[:,:,:,f])) + float(self.bias[:,:,:,f])
+                # calculate and fill output
+                out[i, j] += np.sum(np.multiply(region, self.weights[:,:,:,f])) + float(self.biases[:,:,:,f])
         return out
     
-    def backward(self, d_l_d_out):
-        x = self.last_input
-        dx = np.zeros_like(self.last_input)
-        d_l_d_out = np.pad(d_l_d_out, ((1,1),(1,1),(0,0)), 'constant', constant_values=(0,0))
-        for im_region, i, j in self.iterate_regions(x):
+    def backward(self, grad):
+        """  
+        Provide backpropagation on this layer, basing on [grad] which is loss gradient of this layer output.
+        Backward returns gradient of layer's input, to be able of calculate previous layer gradient.
+        """
+        # init input gradient
+        grad_input = np.zeros_like(self.last_input)
+        # handle padding
+        grad = np.pad(grad, ((1,1),(1,1),(0,0)), 'constant', constant_values=(0,0))
+        # iterate over regions
+        for im_region, i, j in self.iterate_regions(self.last_input):
+            # iterate over filters
             for i_f in range(self.filters):
-                tmp = self.weights[:,:,:,i_f] * d_l_d_out[i, j, i_f]
-                dx[i:i+self.kernel_size, j:j+self.kernel_size] += tmp
-
-                a = d_l_d_out[i:i+self.kernel_size, j:j+self.kernel_size, i_f]
+                # calculate input gradient
+                d = self.weights[:,:,:,i_f] * grad[i, j, i_f]
+                grad_input[i:i+self.kernel_size, j:j+self.kernel_size] += d
+                # calculate weights grad
+                a = grad[i:i+self.kernel_size, j:j+self.kernel_size, i_f]
                 a = np.expand_dims(a, axis=2)
-                tmp = im_region * a
-                self.d_l_d_weights[:,:,:, i_f] += tmp
-                self.d_l_d_bias[:,:,:,i_f] += d_l_d_out[i,j,i_f]
-        return dx
+                d = im_region * a
+                # accumulate weights grad
+                self.grad_weights[:,:,:, i_f] += d
+                # accumulate biases grad
+                self.grad_biases[:,:,:,i_f] += grad[i,j,i_f]
+        return grad_input
 
     
     def update(self, lr):
-        self.weights -= lr * self.d_l_d_weights
-        self.bias -= lr * self.d_l_d_bias
+        """
+        Update layer weights and biases basing on accumulated gradients and [lr] learning rate. 
+        After an update gradients are getting reset.
+        """
+        self.weights -= lr * self.grad_weights
+        self.biases -= lr * self.grad_biases
         self.reset()
 
     def reset(self):
-        self.d_l_d_weights = np.zeros_like(self.weights)
-        self.d_l_d_bias = np.zeros_like(self.bias)
+        """
+        Reset weights and biases gradient
+        """
+        self.grad_weights = np.zeros_like(self.weights)
+        self.grad_biases = np.zeros_like(self.biases)
 
 
 

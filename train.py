@@ -1,7 +1,7 @@
-from statistics import mode
-from sys import prefix
-
-from numpy import safe_eval
+from ast import parse
+from cnn.components.fully_connected import FullyConnected
+from cnn.components.pool import MaxPool2D
+from cnn.components.conv import Conv2D
 from cnn.model import Model
 from data.mnist import get_mnist_data
 from cnn.components.measure import measure_acc, measure_precision, measure_recall, measure_f1
@@ -12,25 +12,29 @@ from cnn.history import History
 from cnn.early_stopping import EarlyStopping
 from cnn.checkpoint import Checkpoint
 import pandas as pd
+from argparse import ArgumentParser
 
-
-def train(
-    model, 
-    epochs=50, 
-    lr=0.001, 
-    batch_size=4, 
-    seed=39571592,
-    skip=None,
-    valid_fraction=0.15,
-    valid=True,  
-    test=True,
-    patience=None,
-    use_checkpoint=True,
-    save_model=True,
-    save_history=True,
-    save_test=True,
-    save_location=None,
-    prefix=None):
+def train(  
+        model, 
+        epochs=50, 
+        lr=0.001, 
+        batch_size=4, 
+        seed=39571592,
+        skip=None,
+        valid_fraction=0.15,
+        valid=True,  
+        test=True,
+        patience=None,
+        use_checkpoint=True,
+        save_model=True,
+        save_history=True,
+        save_test=True,
+        save_location=None,
+        prefix=None,
+        **kwargs):
+    """
+    Train CNN model
+    """
 
     # get data
     x_train, y_train, x_valid, y_valid, x_test, y_test = get_mnist_data(
@@ -133,19 +137,60 @@ def train(
             test_scores_df = pd.DataFrame([test_scores])
             test_scores_df.to_csv(save_location / 'test.csv')
 
+    # store model on drive
     if save_model:
-        
         model.save(save_location / 'model.pckl')
     
+    # store training history on drive
     if save_history:
         save_location =  get_save_location(DEFAULT_TRAIN_SAVE_LOCATION, prefix=prefix) if not save_location else save_location
         history.save(save_location / 'history.pckl')
 
     return results
 
+def parse_args():
+    """
+    Parse train script argument
+    """
+    parser = ArgumentParser(
+        "Train CNN model"
+    )
+    parser.add_argument("--filters", 
+        required=False, 
+        type=int, 
+        default=[8], 
+        action=lambda x: x.split(','),
+        help='  List of filters numbers\n\
+                Example:\n\
+                - 8 [conv_1 (8 filters)]\n\
+                - 4,8 [conv_1 (4 filters), conv_2 (8 filters)]')
+    parser.add_argument('--lr', default=0.001)
+    parser.add_argument('--epochs', default=50)
+    parser.add_argument('--valid_fraction', default=0.15)
+    parser.add_argument('--batch-size', default=4)
+    parser.add_argument('--prefix', required=False, default=None)
+    parser.add_argument('--patience', required=False, default=None)
+    parser.add_argument('--skip', required=False, default=None, help="Use only [skip] number of samples for training from MNIST dataset")
+    args = parser.parse_args()
+    return args
+
+def create_model(filters:list):
+    """
+    Create model object based on filter list
+    """
+    channels = 1
+    layers = []
+    size = 28
+    for i, _filters in enumerate(filters):
+        k = 2 if i == 0 else 3
+        layers.append(Conv2D(channels=channels, filters=_filters, kernel_size=k))
+        layers.append(MaxPool2D())
+        channels = _filters
+        size = (size - 2) // 2
+    layers.append(FullyConnected(input_size=size*size*_filters, cells=10))
+    return Model(layers=layers)
 
 if __name__ == '__main__':
-    model = Model()
-    history, test_results = train(model, epochs=10)
-    model.save('cnn.model')
-    print(history)
+    args = parse_args()
+    model = create_model(args.filters)
+    train(model=model, **vars(args))

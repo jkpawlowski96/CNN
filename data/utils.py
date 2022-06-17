@@ -1,6 +1,9 @@
 import numpy as np
 
 def shuffle(*arrays, seed=None):
+    """
+    Shuffle arrays, oprional by random seed
+    """
     if seed:
         np.random.seed(seed)
     l = len(arrays[0])
@@ -11,6 +14,9 @@ def shuffle(*arrays, seed=None):
     return tuple(res)
  
 def limit_float(value, max_i=2, d=4):
+    """
+    Limit float decimal range for fine printing
+    """
     max_s = max_i + 1 + d
     max_v = pow(10, max_i) - 1
     if value > max_v:
