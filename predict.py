@@ -1,4 +1,3 @@
-from statistics import mode
 from cnn.model import Model
 from argparse import ArgumentParser
 from pathlib import Path
