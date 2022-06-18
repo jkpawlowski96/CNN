@@ -5,6 +5,7 @@ import pandas as pd
 import shutil
 import seaborn as sns
 import matplotlib.pyplot as plt
+import numpy as np
 
 ANALYZE_DIRECTORY_NAME = 'analyze_results'
 
@@ -83,7 +84,11 @@ def analyze_history(files:List[Path], results_directory:Path):
                         hue="model", 
                         #style="event",
                         data=df).set(
-                            title=img_path.stem.replace('_', ' ').capitalize()
+                            title=img_path.stem.replace('_', ' ').capitalize(),
+                            yticks=np.round(np.linspace(
+                                np.min(df[_measure].values), 
+                                np.max(df[_measure].values), 
+                                8), 2)
                         )
             # save plot into image file
             plt.savefig(str(img_path))
@@ -108,7 +113,11 @@ def analyze_history(files:List[Path], results_directory:Path):
                             hue="subset", 
                             #style="event",
                             data=plot_df).set(
-                                title=f'{measure} of {model}'.capitalize()
+                                title=f'{measure} of {model}'.capitalize(),
+                                yticks=np.round(np.linspace(
+                                    np.min(df[_measure].values), 
+                                    np.max(df[_measure].values), 
+                                    8), 2)
                             )
             # save plot into image file
             img_path = results_directory / f'{model}_{measure}'
