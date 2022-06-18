@@ -51,14 +51,7 @@ def experiment(**kwargs):
         MaxPool2D(),
         FullyConnected(5*5*32, 10)
     )), **kwargs, prefix='conv_16_32')
-    train(Model(layers=(
-        Conv2D(1,  32, kernel_size=3),
-        MaxPool2D(),
-        Conv2D(32, 64, kernel_size=2),
-        MaxPool2D(),
-        FullyConnected(5*5*64, 10)
-    )), **kwargs, prefix='conv_32_64')
 
 
 if __name__ == '__main__':
-    experiment(epochs=100, patience=None, skip=100)
+    experiment(epochs=100, patience=10, skip=1000)

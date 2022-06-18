@@ -3,3 +3,4 @@ pandas
 tqdm
 opencv-python
 mnist
+seaborn

@@ -1,4 +1,3 @@
-from statistics import mode
 from cnn.model import Model
 from argparse import ArgumentParser
 from pathlib import Path
@@ -15,15 +14,18 @@ def parse_args():
     return parser.parse_args()
 
 def predict(model_path:Path, source:Path, format:str):
+    """
+    Make prediction of CNN model for given files in [source]
+    """
     model = Model.load(str(model_path))
     print('model loaded')
     if source.is_dir():
         files = source.glob(f'*.{format}')
     else:
-        files = source
+        files = [source]
     for i, file in enumerate(files):
         # read image
-        img = cv2.imread(file)
+        img = cv2.imread(str(file))
         # convert image to grayscale
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         # resize image

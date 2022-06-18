@@ -133,3 +133,5 @@ dmypy.json
 # dumps
 TRAIN/
 TRAIN*/
+
+.DS_Store

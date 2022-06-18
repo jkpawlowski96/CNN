@@ -157,19 +157,19 @@ def parse_args():
     parser.add_argument("--filters", 
         required=False, 
         default=[8], 
-        type=lambda x: x.split(','),
+        type=lambda x: [int(f) for f in x.split(',')],
         help='List of filters numbers \n\
             Examples: \n\
             \'8\' [conv_1 (8 filters)] \n\
             \'4,8\' [conv_1 (4 filters), conv_2 (8 filters)]'
         )
-    parser.add_argument('--lr', default=0.001)
-    parser.add_argument('--epochs', default=50)
-    parser.add_argument('--valid_fraction', default=0.15)
-    parser.add_argument('--batch-size', default=4)
+    parser.add_argument('--lr', type=float, default=0.001)
+    parser.add_argument('--epochs', type=int, default=50)
+    parser.add_argument('--valid_fraction', type=float, default=0.15)
+    parser.add_argument('--batch-size', type=int, default=4)
     parser.add_argument('--prefix', required=False, default=None)
-    parser.add_argument('--patience', required=False, default=None)
-    parser.add_argument('--skip', required=False, default=None, help="Use only [skip] number of samples for training from MNIST dataset")
+    parser.add_argument('--patience', required=False, type=int, default=None)
+    parser.add_argument('--skip', required=False, type=int, default=None, help="Use only [skip] number of samples for training from MNIST dataset")
     args = parser.parse_args()
     return args
 
