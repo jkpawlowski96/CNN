@@ -10,8 +10,8 @@ class Model:
     Representation of CNN model
     """
     def __init__(self, input_size=(28,28,1), layers=(Conv2D(1, 4, 2), MaxPool2D(), FullyConnected(13*13*4, 10)), loss='cross_entropy') -> None:
-        self.inpus_size:Tuple = input_size
-        self.inpus_h = input_size[0]
+        self.input_size:Tuple = input_size
+        self.input_h = input_size[0]
         self.input_w = input_size[1]
         self.input_c = input_size[2]
         self.layers:List[Layer] = list(layers)
@@ -47,7 +47,7 @@ class Model:
         Model forward on given [x] input image. In case of training [label] is needed to calculate loss.
         """
         # check dim of x
-        if len(x.shape) == len(self.inpus_size) - 1:
+        if len(x.shape) == len(self.input_size) - 1:
             # expand x dim into H x W x C
             x = np.expand_dims(x, axis=2)
 

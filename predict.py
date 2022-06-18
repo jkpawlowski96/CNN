@@ -22,10 +22,10 @@ def predict(model_path:Path, source:Path, format:str):
     if source.is_dir():
         files = source.glob(f'*.{format}')
     else:
-        files = source
+        files = [source]
     for i, file in enumerate(files):
         # read image
-        img = cv2.imread(file)
+        img = cv2.imread(str(file))
         # convert image to grayscale
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         # resize image
